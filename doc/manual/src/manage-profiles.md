@@ -1,236 +1,158 @@
-# Manage profiles
-<!--
-SPDX-FileCopyrightText: © 2016 Germar Reitze
+# Manage Profiles
 
-SPDX-License-Identifier: GPL-2.0-or-later
+Back in Time supports multiple backup profiles, allowing you to create different backup configurations for various purposes. Each profile can have its own settings, including different backup destinations, schedules, and file selections.
 
-This file is part of the program "Back In Time" which is released under GNU
-General Public License v2 (GPLv2). See LICENSES directory or go to
-<https://spdx.org/licenses/GPL-2.0-or-later.html>
--->
-## General
+## Creating a New Profile
 
-You can choose which mode *Back in Time* should use to store backups.
+To create a new backup profile:
 
-Available modes:
+1. **Open Settings**: Launch Back in Time and click the "Settings" button in the main interface
+2. **Profile Management**: Navigate to the "Profile" tab or use the profile dropdown menu
+3. **Add New Profile**: Click "Add" or the "+" button to create a new profile
+4. **Name Your Profile**: Enter a descriptive name (e.g., "Documents Backup", "Home Directory", "Project Files")
+5. **Configure Settings**: Set up the backup destination, schedule, and include/exclude rules for this profile
 
-- [Local](#local)
-- [Local Encrypted](#local-encrypted)
-- [SSH](#ssh)
-- [SSH Encrypted](#ssh-encrypted)
+### Best Practices for Profile Names
+- Use descriptive names that clearly indicate the purpose
+- Examples: "Daily Documents", "Weekly Full Backup", "USB Drive Backup", "Server Sync"
+- Avoid generic names like "Profile1" or "Backup"
 
-### Local
+## Switching Between Profiles
 
-Local backups can be stored on internal or external hard-drives or on mounted
-shares. The destination file-system must support hard-links. Also the protocol
-used to mount the remote share must support hard-links and symlinks. By default
-Samba (SMB/CIFS) servers do not support symlinks (can be activated with `follow
-symlinks = yes` and `wide links = yes` in `/etc/samba/smb.conf`). sshfs mounted
-shares do not support hard-links.
+To switch to a different profile:
 
-![Settings - General](_images/light/settings_general.png#only-light)
-![Settings - General](_images/dark/settings_general.png#only-dark)
+1. **Profile Dropdown**: In the main window, locate the profile dropdown menu (usually at the top)
+2. **Select Profile**: Click the dropdown and choose the desired profile from the list
+3. **Automatic Loading**: The interface will automatically load the selected profile's settings and backup history
 
-Choose the destination path for backups with the
-![directory](_images/folder_btn.svg) directory button (to show hidden files use
-CTRL + H or context menu with right mouse button). [Back in Time will create
-sub-directories `backintime/<HOST>/<USER>/<PROFILE>/` inside that directory.
-Backups will be placed inside the `<PROFILE>/` directory.
+### Profile Switching Tips
+- The current active profile is displayed in the main window title bar
+- Each profile maintains its own backup timeline and restore points
+- Switching profiles does not affect ongoing backup operations
 
-### Local Encrypted
+## Editing Profile Settings
 
-[Local Encrypted](#local-encrypted) works like [Local](#local) but the
-backups will be stored encrypted with `EncFs`. The encrypted folder will be
-created automatically inside the selected folder.
+To modify an existing profile:
 
-!!! Danger
+1. **Select Profile**: Switch to the profile you want to edit
+2. **Open Settings**: Click the "Settings" button
+3. **Modify Configuration**: Update any settings as needed:
+   - **General**: Change profile name, backup destination
+   - **Schedule**: Modify backup frequency and timing
+   - **Include**: Add or remove directories to backup
+   - **Exclude**: Set exclusion patterns for files/folders
+   - **Auto-remove**: Configure retention policies
+4. **Save Changes**: Click "OK" or "Apply" to save your modifications
 
-    A recent security audit revealed several possible attack vectors for `EncFs`.
+## Deleting a Profile
 
-    From [https://defuse.ca/audits/encfs.htm](https://defuse.ca/audits/encfs.htm):
+!!! warning
+    Deleting a profile will remove all its settings and backup history. This action cannot be undone.
 
-    > EncFS is probably safe as long as the adversary only gets one copy of the ciphertext and nothing more. EncFS is not safe if the adversary has the opportunity to see two or more backups of the ciphertext at different times. EncFS attempts to protect files from malicious modification, but there are serious problems with this feature.
+To delete a profile:
 
-This might be a problem with Back In Time backups.
+1. **Select Profile**: Switch to the profile you want to delete (or select it from settings)
+2. **Open Profile Settings**: Go to Settings → Profile tab
+3. **Delete Profile**: Click "Remove" or the "-" button next to the profile name
+4. **Confirm Deletion**: Confirm the action in the dialog box
+5. **Automatic Switching**: Back in Time will automatically switch to another available profile
 
-![Manage profiles - General](_images/light/settings_general_local_encrypted.png#only-light)
-![Manage profiles - General](_images/dark/settings_general_local_encrypted.png#only-dark)
+### Before Deleting a Profile
+- **Backup Important Data**: Ensure you have copies of any critical backups
+- **Export Settings**: Consider exporting the profile configuration if you might need it later
+- **Check Dependencies**: Verify that no scheduled tasks depend on this profile
 
-Enter the password for `EncFs` in `Encryption`. The password can be stored in
-users keyring. The keyring is unlocked with the users password during
-login. When running a scheduled backup-job while the user is not logged in the
-keyring is not available. For this case, the password can be cached in memory
-by Back in Time.
+## Profile Management Best Practices
 
-### SSH
+### Organization Strategies
+- **Purpose-Based Profiles**: Create profiles based on what you're backing up (Documents, Photos, Code)
+- **Frequency-Based Profiles**: Separate profiles for different backup schedules (Hourly, Daily, Weekly)
+- **Destination-Based Profiles**: Different profiles for local drives, network storage, and external devices
 
-This mode will store backups on a remote host which is available through
-`SSH`. It will run `rsync` directly on the remote host which makes it a lot
-faster than syncing to a local mounted share.
+### Example Profile Configurations
 
-In order to use this mode the remote host need to be in your `known_hosts`
-file. Keep in mind that hostnames treated case-sensitive in that file. You need
-to have a public/private SSH key pair installed on the remote host. Starting
-with Back in Time version 1.2.0 this will be done automatically. For versions
-lower than 1.2.0 you need to do this manually:
+#### Daily Work Profile
+- **Name**: "Daily Work Backup"
+- **Schedule**: Every day at 6 PM
+- **Include**: `/home/user/Documents`, `/home/user/Projects`
+- **Destination**: Local external drive
+- **Retention**: Keep 30 days of backups
 
-- If you did not login into the remote host before you need to run `ssh
-  USER@HOST` in Terminal. You will be asked to confirm the fingerprint of the
-  remote host-key with `yes`. In order to compare the host-key you need to
-  login to the remote host locally and run `ssh-keygen -l -f
-  /etc/ssh/ssh_host_ecdsa_key.pub`. The fingerprint from this output must match
-  the fingerprint you got asked above. You can exit immediately after this.
-- Generate a new public/private SSH key with `ssh-keygen`. Press Enter to
-  accept the default path and enter a password for the new key (this has
-  nothing to do with your user-password on the remote host).
-- Run `ssh-copy-id -i ~/.ssh/id_rsa.pub USER@HOST` to install the newly created
-  key on the remote host. For the last time you need to enter the login
-  password for the remote user. If successful you should now be able to log in
-  without being asked for your login password.
+#### Weekly System Profile
+- **Name**: "Weekly System Backup"
+- **Schedule**: Every Sunday at 2 AM
+- **Include**: Entire home directory
+- **Destination**: Network storage
+- **Retention**: Keep 12 weeks of backups
 
-![Settings - General](_images/light/settings_general_ssh.png#only-light)
-![Settings - General](_images/dark/settings_general_ssh.png#only-dark)
+#### USB Sync Profile
+- **Name**: "USB Drive Sync"
+- **Schedule**: When drive connected (udev)
+- **Include**: Critical documents and photos
+- **Destination**: USB drive
+- **Retention**: Keep last 10 backups
 
-Enter the name or IP-address of the remote host in `Host` and the port of the
-remote SSH-server in `Port` (default `22`). `User` need to be the remote
-user. `Path` can be empty to place the backups directory directly into remote
-users home folder. Relative paths without leading slash (`foo/bar/`) will be
-sub-directories of users home. Paths with leading slash (`/mnt/foo/bar/`) will be
-absolute.
+## Troubleshooting Profile Issues
 
-In `Cipher` you can choose the cipher (algorithm used to encrypt) for SSH
-transfer. Depending on the involved systems it could be faster to select a
-different cipher than default. Some of them might not work because they are
-known to be insecure.
+### Profile Not Loading
+- **Check Permissions**: Ensure Back in Time has read access to the profile configuration
+- **Verify Path**: Confirm the backup destination path is accessible
+- **Restart Application**: Close and reopen Back in Time
 
-In `Private Key` you need to select your private SSH key. If this does not yet
-exist, you can create a new public/private SSH key without password by clicking
-on ![add](_images/list-add_btn.svg)
+### Profile Settings Reset
+- **Configuration Corruption**: Profile settings may have been corrupted
+- **Solution**: Recreate the profile with the same settings
+- **Prevention**: Regularly export profile configurations as backups
 
-Enter the private key password in `SSH private key` (this is the password you
-chose above during creating the public/private key pair, not the login password
-for the remote user). The password can be stored in users keyring. The keyring
-is unlocked with the users password during login. When running a scheduled
-backup-job while the user is not logged in, the keyring is not available. For
-this case, the password can be cached in memory by Back in Time.
+### Multiple Profile Conflicts
+- **Simultaneous Backups**: Avoid scheduling multiple profiles at the same time
+- **Resource Conflicts**: Ensure different profiles don't backup overlapping directories to the same destination
+- **Solution**: Stagger backup schedules by at least 30 minutes
 
-### SSH Encrypted
+### Profile Deletion Issues
+- **Active Backups**: Cannot delete profile with running backup jobs
+- **Solution**: Wait for backup completion or cancel active jobs
+- **Locked Files**: Some systems may lock profile files during operation
 
-SSH Encrypted](#ssh-encrypted) will work like [SSH](#ssh) but the backups
-will be stored encrypted using `encfs --reverse`. Back in Time will mount an
-encrypted view of the local root file-system (`/`) and sync it with `rsync` to
-the remote host. As [Back in Time will backup the encrypted files, all logs and
-status messages will show cypher text.
+## Advanced Profile Management
 
-!!! Danger
+### Copying Profiles
+1. Create a new profile
+2. Manually copy settings from the existing profile
+3. Adjust settings as needed for the new use case
 
-    A recent security audit revealed several possible attack vectors for `EncFs`.
+### Importing/Exporting Profiles
+- **Export**: Use the settings export feature to save profile configurations
+- **Import**: Import saved configurations to restore or share profiles
+- **Backup**: Keep exported profile files as configuration backups
 
-    From [https://defuse.ca/audits/encfs.htm](https://defuse.ca/audits/encfs.htm):
+### Profile Configuration Files
+Profile settings are typically stored in:
+- **Linux**: `~/.config/backintime/config`
+- **Location**: Each profile has a numbered section in the configuration file
 
-    > EncFS is probably safe as long as the adversary only gets one copy of
-    > the ciphertext and nothing more. EncFS is not safe if the adversary has
-    > the opportunity to see two or more backups of the ciphertext at
-    > different times. EncFS attempts to protect files from malicious
-    > modification, but there are serious problems with this feature.
+## Common Profile Use Cases
 
-This might be a problem with *Back In Time* backups.
+### Home User Scenarios
+- **Personal Documents**: Daily backup of important files
+- **Photo Archive**: Weekly backup of photo collections
+- **System Configuration**: Monthly backup of system settings
 
-![Settings - General](_images/light/settings_general_ssh_encrypted.png#only-light)
-![Settings - General](_images/dark/settings_general_ssh_encrypted.png#only-dark)
+### Professional Scenarios
+- **Project Work**: Hourly backup during active development
+- **Client Data**: Daily backup with long retention periods
+- **System Administration**: Multiple profiles for different server configurations
 
-Additional to those settings from [SSH](#ssh) you need to provide a password
-for encryption.
+### Multi-User Environments
+- **Individual Profiles**: Each user maintains their own backup profiles
+- **Shared Resources**: Common profiles for shared directories
+- **Administrative Oversight**: Central management of backup policies
 
-### Advanced
+## Profile Performance Tips
 
-`Host`, `User` and `Profile` will be filled automatically (must not be
-empty). They are used for the backup path
-`backintime/<HOST>/<USER>/<PROFILE>/`. The full backup path will be shown
-below. You can change them to match paths from other machines.
+- **Optimize Include/Exclude Rules**: Be specific about what to backup to improve performance
+- **Schedule Wisely**: Avoid peak usage times for large backups
+- **Monitor Disk Space**: Ensure adequate space for all configured profiles
+- **Regular Maintenance**: Periodically review and clean up unused profiles
 
-### Schedule
-
-You can choose between couple different schedules which will automatically
-start a new backup. Most of them will use `crontab` to set up new
-schedules. You can use `crontab -l` to view them or `crontab -e` to edit.
-
-- **At every boot/reboot**: start a new backup immediately after
-  startup. This will add a `@reboot <COMMAND>` line in `crontab`. Wake up from
-  suspend/hibernate will not trigger this schedule.
-- **Every X minutes**: start a new backup every 5, 10 or 30 minutes. This
-  will add a line `*/<X> * * * * <COMMAND>` in `crontab`.
-- **Every hour**: start a new backup on every full hour. This will add a line
-  `0 * * * * <COMMAND>` in `crontab`.
-- **Every X hours**: start a new backup every 2, 4, 6 or 12 hours at the full
-  hour (e.g. at 0:00, 6:00, 12:00 and 18:00 with schedule [Every 6 hours). This
-  will add a line `0 */<X> * * * <COMMAND>` in `crontab`. If the computer is
-  not running at scheduled time there will be no new backup. This will not
-  resume after switching on again.
-- **Custom Hours**: define custom pattern for `crontab`. This can be either a
-  comma separated list of hours (e.g 0,10,13,15,17,20,23) or \*/\<X\>
-  (e.g. [\*/3) for periodic schedules. This will add a line `0
-  0,10,13,15,17,20,23 * * * <COMMAND>` in `crontab`. If the computer is not
-  running at scheduled time there will be no new backup. This will not resume
-  after switching on again.
-- **Every Day**: start a new backup on a configurable time on every day. If
-  the computer is not running at the configured time there will be no new
-  backup for the day.
-- **Repeatedly (anacron)**: this schedule will start new backups after a
-  configurable time (hours, days or weeks) when the last backup was done
-  before this delay. This will also work when the system was powered off. It
-  does imitate anacron but doesn't use it. Instead Back in Time writes it's own
-  time-stamp after each successful backup and add a `crontab` job which will
-  start Back in Time every 15min (or every hour if configured for weeks). If
-  the configured delay is not done yet it will just exit immediately. If an
-  error occurred during taking the backup it won't write a new time-stamp and
-  so will try again after 15min/one hour.
-- **When drive get connected (udev)**: this schedule will start a new backup
-  as soon as the USB/eSATA/Firewire drive get connected. You can configure a
-  delay (hours, days or weeks like in schedule Repeatedly) so it won't start on
-  every new connection. This will add a new udev rule in
-  `/etc/udev/rules.d/99-backintime-<USER>.rules` using the partitions UUID. If
-  using KDE you need to enable auto-mount for the device in System-Settings.
-- **Every Week**: start a new backup on a configurable week-day/time every
-  week. If the computer is not running at the configured time there will be no
-  new backup for the week.
-- **Every Month**: start a new backup on a configurable day/time every
-  month. If the computer is not running at the configured time there will be no
-  new backup for the month.
-
-!!! note
-    For hourly schedules (every hour, every x hours, and custom hours),
-    there will be an option to specify how many minutes after the hour the
-    schedule should run. This can be used to prevent multiple backup profiles
-    from running at the same time.
-
-## Include
-
-![Settings - Include](_images/light/settings_include.png#only-light)
-![Settings - Include](_images/dark/settings_include.png#only-dark)
-
-## Exclude
-
-![Settings - Exclude](_images/light/settings_exclude.png#only-light)
-![Settings - Exclude](_images/dark/settings_exclude.png#only-dark)
-
-## Remove & Retention
-Also known as _Auto-remove_ In previous versions of _Back In Time_.
-
-![Settings - Auto Remove](_images/light/settings_autoremove.png#only-light)
-![Settings - Auto Remove](_images/dark/settings_autoremove.png#only-dark)
-
-## Options
-
-![Settings - Options](_images/light/settings_options.png#only-light)
-![Settings - Options](_images/dark/settings_options.png#only-dark)
-
-## Expert Options
-
-![Settings - Expert Options](_images/light/settings_expert_options.png#only-light)
-![Settings - Expert Options](_images/dark/settings_expert_options.png#only-dark)
-
-## User-callback
-
-For more information on user callback see [this](user-callback.md).
-
+For more information on configuring specific backup settings within profiles, see the related documentation sections on scheduling, include/exclude rules, and backup destinations.
